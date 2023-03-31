@@ -3,6 +3,7 @@ using Auth.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Auth.Utils;
+
 namespace Auth.Controllers
 {
     [Route("api/[controller]")]
@@ -29,7 +30,16 @@ namespace Auth.Controllers
             PasswordTools.CreatePasswordHash(req.Password, out byte[] passwordSalt, out byte[] passwordHash);
 
             User user = new User();
-            
+            if(req.Base64PhotoString == null)
+            {
+                user.Photo = null;
+            }
+            else
+            {
+                byte[] ReqPhotoByteArr = Convert.FromBase64String(req.Base64PhotoString);
+                user.Photo = ReqPhotoByteArr;
+            }
+
             user.Username = req.Username;
             user.PasswordSalt = passwordSalt;
             user.PasswordHash = passwordHash;
@@ -39,7 +49,7 @@ namespace Auth.Controllers
             await _context.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            return user;
+            return Ok(user);
         }
 
         [HttpPost("login")]
